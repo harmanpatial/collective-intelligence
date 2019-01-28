@@ -20,7 +20,8 @@ critics={'Lisa Rose':{'Lady in the Water':2.5, 'Snake on a Plane': 3.5,
     'Jack Mattews':{'Lady in the Water': 3.0, 'Snake on a Plane': 4.0,
     'The Night Listener': 3.0, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5},
     'Toby': {'Snake on a Plane': 4.5, 'You, Me and Dupree': 1.0, 'Superman Returns': 4.0},
-    'Harman':{'Snake on a Plane': 0.5, 'Superman Returns': 4.0, 'You, Me and Dupree': 3.5}}
+#    'Harman':{'Snake on a Plane': 0.5, 'Superman Returns': 4.0, 'You, Me and Dupree': 3.5}
+    }
 
 
 def sim_distance(prefs, person1, person2):
@@ -77,8 +78,46 @@ def topMatches(prefs, person, n=5, similarity=sim_pearson):
         if other != person:
             scores.append((similarity(prefs,person,other), other))
 
-    scores.sort()
-    scores.reverse()
+    scores.sort(reverse=True)
     return scores[0:n]
 
 
+# Gets recommendations for a person by using a weighted average
+# of every other user's rankings
+def getRecommendations(prefs,person,similarity=sim_pearson):
+    totals = {}
+    simSums = {}
+
+    for other in prefs:
+        if other is person: continue;
+        sim = similarity(prefs, person, other)
+
+        if sim<=0: continue
+
+        for item in prefs[other]:
+            # only score movies that person has not seen
+            if item not in prefs[person] or prefs[person][item]==0:
+                # Similarity * Score
+                totals.setdefault(item, 0.0)
+                totals[item] += prefs[other][item] * sim
+                # Sum of similarities
+                simSums.setdefault(item, 0.0)
+                simSums[item] += sim
+
+    # Create the normalized list
+    rankings=[(total/simSums[item], item) for item, total in totals.items()]
+
+    # Return the sorted list
+    rankings.sort(reverse=True)
+    return rankings
+
+
+def transformPrefs(prefs):
+    result = {}
+
+    for person in prefs:
+        for item in prefs[person]:
+            result.setdefault(item, {})
+            result[item][person] = prefs[person][item]
+
+    return result
