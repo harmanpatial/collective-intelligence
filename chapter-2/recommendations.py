@@ -15,11 +15,12 @@ critics={'Lisa Rose':{'Lady in the Water':2.5, 'Snake on a Plane': 3.5,
     'The Night Listener': 4.5, 'Superman Returns': 4.0,
     'You, Me and Dupree': 2.5},
     'Mick LaSalle':{'Lady in the Water':3.0, 'Snake on a Plane': 4.0,
-    'Just My Luck': 2.0, 'Superman Returns': 3.0, 'You, Me and Dupree': 3.0,
-    'The Night Listener': 2.0},
+    'Just My Luck': 2.0, 'Superman Returns': 3.0, 'The Night Listener': 3.0,
+    'You, Me and Dupree': 2.0},
     'Jack Mattews':{'Lady in the Water': 3.0, 'Snake on a Plane': 4.0,
     'The Night Listener': 3.0, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5},
-    'Toby': {'Snake on a Plane': 4.5, 'You, Me and Dupree': 1.0, 'Superman Returns': 4.0}}
+    'Toby': {'Snake on a Plane': 4.5, 'You, Me and Dupree': 1.0, 'Superman Returns': 4.0},
+    'Harman':{'Snake on a Plane': 0.5, 'Superman Returns': 4.0, 'You, Me and Dupree': 3.5}}
 
 
 def sim_distance(prefs, person1, person2):
@@ -27,10 +28,9 @@ def sim_distance(prefs, person1, person2):
     si = []
     for item in prefs[person1]:
         if item in prefs[person2]:
-            print "Common item: " + item
             si.append(item)
 
-    #if they have no ratings in common, return 0
+    # If they have no ratings in common, return 0
     if len(si) is 0:
         return 0;
 
@@ -57,10 +57,10 @@ def sim_pearson(prefs, p1, p2):
     sum2 = sum([prefs[p2][it] for it in si])
 
     # Sum up the squares
-    sum1Sq = sum([prefs[p1][it] for it in si])
-    sum2Sq = sum([prefs[p2][it] for it in si])
+    sum1Sq = sum([pow(prefs[p1][it], 2) for it in si])
+    sum2Sq = sum([pow(prefs[p2][it], 2) for it in si])
 
-    # Sum up the squares
+    # Sum of the product
     pSum = sum([prefs[p1][it]*prefs[p2][it] for it in si])
 
     # Calculate Pearson score
@@ -70,3 +70,15 @@ def sim_pearson(prefs, p1, p2):
 
     r = num/den
     return r
+
+def topMatches(prefs, person, n=5, similarity=sim_pearson):
+    scores = []
+    for other in prefs:
+        if other != person:
+            scores.append((similarity(prefs,person,other), other))
+
+    scores.sort()
+    scores.reverse()
+    return scores[0:n]
+
+
